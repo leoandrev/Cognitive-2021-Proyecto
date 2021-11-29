@@ -1,0 +1,23 @@
+{% extends 'layout1.html' %}
+
+{% block body %}
+
+<h1>Register Here</h1>
+      <form method="POST" action="/registerusuario">
+        <!-- USERNAME INPUT -->
+        <label for="username">Username</label>
+        <input type="text" name="usuarioh" placeholder="Enter Username">
+        <!-- EMAIL INPUT -->
+        <label for="username">Email</label>
+        <input type="text" name="correoh" placeholder="Enter Email">
+        <!-- PASSWORD INPUT -->
+        <label for="password">Password</label>
+        <input type="password" name="contrash" placeholder="Enter Password">
+        <button type="submit">
+            Register
+        </button><br>
+        <a href="/">Do you have already an account?</a><br>
+        <a href="/admin">Are you Admin?</a>
+      </form>
+
+{% endblock %}

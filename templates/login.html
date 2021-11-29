@@ -1,0 +1,28 @@
+{% extends 'layout1.html' %}
+
+{% block body %}
+
+<!-- Flash Section -->
+{% for message in get_flashed_messages()%}
+<div class="alert alert-info alert-dismissible">
+  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+  {{ message }}
+</div>
+{% endfor%}
+<!-- End Flash Section -->
+
+<h1>Login Here</h1>
+      <form method="POST" action="/loginusuario">
+        <!-- EMAIL INPUT -->
+        <label for="username">Email</label>
+        <input type="text" name="correoh" placeholder="Enter Email">
+        <!-- PASSWORD INPUT -->
+        <label for="password">Password</label>
+        <input type="password" name="contrash" placeholder="Enter Password">
+        <button type="submit">
+            Log In
+        </button><br>
+        <a href="/register">Don't have An account?</a><br>
+      </form>
+
+{% endblock %}
