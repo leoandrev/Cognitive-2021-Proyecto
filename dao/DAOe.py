@@ -64,7 +64,7 @@ class DAOUsuario:
 
 class Manager:
     def connect(self):
-        return pymysql.connect(host="localhost",user="root",password="",db="db_poo" )
+        return pymysql.connect(host="localhost",user="root",password="",db="db_poo")
 
     def readUsers(self, id):
         con = Manager.connect(self)
@@ -74,14 +74,14 @@ class Manager:
             if id == None:
                 cursor.execute("SELECT * FROM usuario where privilegio = 'usuario' order by nombre asc")
             else:
-                cursor.execute("SELECT * FROM usuario where id = %s && privilegio = 'usuario' order by nombre asc", (id,))
+                cursor.execute("SELECT * FROM usuario where id = %s && privilegio = 'usuario'", (id,))
             return cursor.fetchall()
         except:
             return ()
         finally:
             con.close() # Se cierra la conexion en caso de error abrupto
 
-    def insert(self, data, confirmacion): #AQUI FALTA
+    def insertUser(self, data, confirmacion): #AQUI FALTA
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -91,7 +91,7 @@ class Manager:
                 con.commit()
                 return True
             else:
-                cursor.execute("INSERT INTO usuario(correo, contrasena, privilegio) VALUES(%s, %s, 'admin')", (data['correo'],data['nickname'],data['contrasena'],))
+                cursor.execute("INSERT INTO usuario(correo, nickname, contrasena, privilegio) VALUES(%s, %s, %s, 'admin')", (data['correo'], data['nickname'],data['contrasena'],))
                 con.commit()
                 return True
         except:
@@ -115,7 +115,21 @@ class Manager:
         finally:
             con.close()
 
-    def Admin_readBook(self, id):
+    def readPrestamo(self, id):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("SELECT * FROM prestamo where Usuario_idUsuario = %s", (id,))
+            return cursor.fetchall()
+        except:
+            return ()
+        finally:
+            con.close()
+
+    
+
+    def readBooks(self, id): # FALTA PARA EL USUARIO. PARA EL ADMIN ESTA LISTO
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -151,34 +165,6 @@ class Manager:
 
         try:
             cursor.execute("DELETE FROM libro where id = %s", (id,))
-            con.commit()
-            return True
-        except:
-            con.rollback()
-            return False
-        finally:
-            con.close()
-
-    def insert(self,data):
-        con = DAOUsuario.connect(self)
-        cursor = con.cursor()
-
-        try:
-            cursor.execute("INSERT INTO usuario(nombre,telefono,email) VALUES(%s, %s, %s)", (data['nombre'],data['telefono'],data['email'],))
-            con.commit()
-            return True
-        except:
-            con.rollback()
-            return False
-        finally:
-            con.close()
-    
-    def delete(self, id):
-        con = DAOUsuario.connect(self)
-        cursor = con.cursor()
-
-        try:
-            cursor.execute("DELETE FROM usuario where id = %s", (id,))
             con.commit()
             return True
         except:

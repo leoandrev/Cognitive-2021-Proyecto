@@ -6,6 +6,7 @@ from flask import redirect, url_for, session
 # Enviar mensajes entre vistas
 from flask import flash
 # import bcrypt
+from dao.DAOe import Manager
 
 app = Flask(__name__)
 
@@ -22,6 +23,7 @@ app.secret_key = 'mysecretkey'
 
 # Semilla para encriptamiento
 # semilla = bcrypt.gensalt()
+Handler = Manager()
 
 
 # ------ RUTAS Y FUNCIONES ------ #
@@ -111,19 +113,44 @@ if __name__ == '__main__':
 
 
 # ------ ADMIN ------ #
-@app.route('/dahsboard')
+@app.route('/admin/dahsboard')
 def principal_dashboard():
     if session['S_privilegio'] == 'usuario':
-        return render_template('<h1> No tienes autorización para entrar aquí</h1>')
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return render_template('dashboard.html')
     
     else:
-
         return render_template('admin/dashboard.html')
 
-@app.route('/dashboard/books')
+@app.route('/admin/dashboard/books')
 def books():
-    return 
+    if session['S_privilegio'] == 'usuario':
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return render_template('dashboard.html')
+    else:
+        books = Handler.readBooks(None)
+        return render_template('admin/books.html', data_libros=books)
     
+@app.route('/admin/dashboard/users')
+def ViewUsers():
+    if session['S_privilegio'] == 'usuario':
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return render_template('admin/dashboard.html')
+
+    else:
+        data = Handler.readUsers(None)
+        return render_template('admin/users.html', data_usuarios=data)
+
+@app.route('/admin/dashboard/users/<int:id>')
+def ViewSingleUser(id):
+    if session['S_privilegio'] == 'usuario':
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return render_template('admin/dashboard.html')
+
+    else:
+        user = Handler.readUsers(id)
+        return render_template('admin/user.html', data_usuario = user)
+
 
 # ------------------- #
 
