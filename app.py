@@ -129,7 +129,7 @@ def books():
         return render_template('dashboard.html')
     else:
         books = Handler.readBooks(None)
-        return render_template('admin/books.html', data_libros=books)
+        return render_template('index.html', data_libros=books)
     
 @app.route('/admin/dashboard/users')
 def ViewUsers():
