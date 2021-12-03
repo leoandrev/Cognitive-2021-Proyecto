@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'bibliotecaApp'
+app.config['MYSQL_DB'] = 'db_prueba'
 
 mysql = MySQL(app)
 
@@ -27,39 +27,39 @@ Handler = Manager()
 
 
 # ------ RUTAS Y FUNCIONES ------ #
-@app.route("/")
+@app.route('/')
 def login():
     return render_template('login.html')
     
 
-@app.route("/loginusuario", methods=["POST"])
+@app.route('/loginusuario', methods=["POST"])
 def loginusuario():
     if request.method == 'POST':
         correo = request.form['correoh']
         contraseña = request.form['contrash']
-        print(contraseña)
         ## session['user'] = correo
         # Dar los datos a MySQL; Cursor para saber 
         # dónde está la conexión
         cur = mysql.connection.cursor()
-        cur.execute('SELECT * FROM usuarios WHERE correo=%s', (correo,))
+        cur.execute('SELECT * FROM usuario WHERE nickname=%s', (correo,))
         # Función para guardar en 'user' un elemento
         user = cur.fetchone()
-        user1 = cur.fetchall()
         print(user)
-        print(user1)
         cur.close()
 
         if len(user) > 0: # Si existe el usuario
             if contraseña == user[3]:
                 print('coinciden')
-                session['S_usuario'] = user[1]
+                #session['S_usuario'] = user[1]
                 session['S_id'] = user[0]
                 session['S_privilegio'] = user[4]
-                return redirect(url_for('inicio'))
-            else:
-                flash("Error. La contraseña no es correcta.")
-                return redirect(url_for('login'))
+                if session['S_privilegio'] == 'admin':
+                    return redirect(url_for('admin')) #"<h1> Accediste como admin </h1>" #
+                #else:
+                    #return render_template('inicio.html')
+            #else:
+            flash("Error. La contraseña no es correcta.")
+            return redirect(url_for('login'))
         else:
             flash("El usuario no existe.")
             return redirect(url_for('login'))
@@ -67,11 +67,11 @@ def loginusuario():
     else:
         return render_template('login.html')
 
-@app.route("/register")
+@app.route('/register')
 def registrar():
     return render_template("registrar.html")
 
-@app.route("/registerusuario", methods=["POST"])
+@app.route('/registerusuario', methods=["POST"])
 def registrar_usuario():
     if request.method == 'POST':
         usuario = request.form['usuarioh']
@@ -88,50 +88,55 @@ def registrar_usuario():
         flash('Usuario registrado satisfactoriamente')
         return redirect(url_for('login'))
 
-@app.route("/inicio")
-def inicio():
-    if 'S_usuario' in session:
-        if session['S_privilegio'] == 'usuario':
-            return render_template('inicio.html')
-        else:
-            return render_template('dashboard.html')
-    else:
-        flash('No has iniciado sesión aún.')
-        return render_template('login.html')
-
 @app.route('/logout')
 def logout():
-    session.pop('S_usuario', None)
+    session.pop('S_id', None)
     session.pop('S_privilegio', None)
     flash('Sesión cerrada.')
     return redirect(url_for('login'))
 
-if __name__ == '__main__':
-    app.run(port=3000, debug=True)
 
-# ------ USUARIO ------#
 
+# ------ USUARIO ------ #
+@app.route('/inicio')
+def inicio():
+    if 'S_id' in session:
+        if session['S_privilegio'] == 'usuario':
+            return render_template('inicio.html')
+        else:
+            flash('Esta ruta corresponde a usuario.')
+    else:
+        flash('No has iniciado sesión aún.')
+        return render_template('login.html')
+
+
+# ---------------------- #
 
 # ------ ADMIN ------ #
-@app.route('/admin/dahsboard')
-def principal_dashboard():
-    if session['S_privilegio'] == 'usuario':
-        flash('No tienes autorización para ingresar a esta ruta.')
+@app.route('/admin')
+def admin():
+    #if session['S_privilegio'] == 'admin':
         return render_template('dashboard.html')
     
-    else:
-        return render_template('admin/dashboard.html')
+    #else:
+        #flash('No tienes autorización para ingresar a esta ruta.')
+        #return render_template('inicio.html')
+        
 
-@app.route('/admin/dashboard/books')
+@app.route('/admin/books')
 def books():
-    if session['S_privilegio'] == 'usuario':
-        flash('No tienes autorización para ingresar a esta ruta.')
-        return render_template('dashboard.html')
-    else:
+    if session['S_privilegio'] == 'admin':
         books = Handler.readBooks(None)
-        return render_template('index.html', data_libros=books)
+        print(books)
+        return render_template('index.html', data_books=books)
+
+    else:
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return render_template('inicio.html')
+        
     
-@app.route('/admin/dashboard/users')
+    
+@app.route('/admin/users')
 def ViewUsers():
     if session['S_privilegio'] == 'usuario':
         flash('No tienes autorización para ingresar a esta ruta.')
@@ -141,7 +146,8 @@ def ViewUsers():
         data = Handler.readUsers(None)
         return render_template('admin/users.html', data_usuarios=data)
 
-@app.route('/admin/dashboard/users/<int:id>')
+
+@app.route('/admin/users/<int:id>')
 def ViewSingleUser(id):
     if session['S_privilegio'] == 'usuario':
         flash('No tienes autorización para ingresar a esta ruta.')
@@ -153,5 +159,8 @@ def ViewSingleUser(id):
 
 
 # ------------------- #
+
+if __name__ == '__main__':
+    app.run(port=3000, debug=True)
 
 # ------------------------------- #

@@ -64,7 +64,7 @@ class DAOUsuario:
 
 class Manager:
     def connect(self):
-        return pymysql.connect(host="localhost",user="root",password="",db="db_poo")
+        return pymysql.connect(host="localhost",user="root",password="",db="db_prueba")
 
     def readUsers(self, id):
         con = Manager.connect(self)
@@ -135,9 +135,9 @@ class Manager:
 
         try:
             if id == None:
-                    cursor.execute("SELECT * FROM libro order by nombre asc")
+                cursor.execute("SELECT * FROM libro")
             else:
-                    cursor.execute("SELECT * FROM libro where id = %s order by nombre asc", (id,))
+                cursor.execute("SELECT * FROM libro where id = %s order by nombre asc", (id,))
             return cursor.fetchall()
             
         except:
