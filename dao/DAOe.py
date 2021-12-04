@@ -4,49 +4,6 @@ class DAOUsuario:
     def connect(self):
         return pymysql.connect(host="localhost",user="root",password="",db="db_poo" )
 
-    def read(self, id):
-        con = DAOUsuario.connect(self)
-        cursor = con.cursor()
-
-        try:
-            if id == None:
-                cursor.execute("SELECT * FROM usuario order by nombre asc")
-            else:
-                cursor.execute("SELECT * FROM usuario where id = %s order by nombre asc", (id,))
-            return cursor.fetchall()
-        except:
-            return ()
-        finally:
-            con.close() # Se cierra la conexion en caso de error abrupto
-
-    def insert(self,data):
-        con = DAOUsuario.connect(self)
-        cursor = con.cursor()
-
-        try:
-            cursor.execute("INSERT INTO usuario(nombre,telefono,email) VALUES(%s, %s, %s)", (data['nombre'],data['telefono'],data['email'],))
-            con.commit()
-            return True
-        except:
-            con.rollback()
-            return False
-        finally:
-            con.close()
-    
-    def delete(self, id):
-        con = DAOUsuario.connect(self)
-        cursor = con.cursor()
-
-        try:
-            cursor.execute("DELETE FROM usuario where id = %s", (id,))
-            con.commit()
-            return True
-        except:
-            con.rollback()
-            return False
-        finally:
-            con.close()
-
     def update(self, id, data):
         con = DAOUsuario.connect(self)
         cursor = con.cursor()
@@ -64,7 +21,7 @@ class DAOUsuario:
 
 class Manager:
     def connect(self):
-        return pymysql.connect(host="localhost",user="root",password="",db="db_prueba")
+        return pymysql.connect(host="localhost",user="root",password="",db="db_prueba1")
 
     def readUsers(self, id):
         con = Manager.connect(self)
@@ -135,7 +92,7 @@ class Manager:
 
         try:
             if id == None:
-                cursor.execute("SELECT * FROM libro")
+                cursor.execute("SELECT * FROM libro order by nombre asc")
             else:
                 cursor.execute("SELECT * FROM libro where id = %s order by nombre asc", (id,))
             return cursor.fetchall()

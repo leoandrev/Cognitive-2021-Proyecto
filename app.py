@@ -1,3 +1,4 @@
+from re import A
 from flask import Flask, render_template
 from flask_mysqldb import MySQL, MySQLdb
 from flask import request
@@ -14,7 +15,7 @@ app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'db_prueba'
+app.config['MYSQL_DB'] = 'db_prueba1'
 
 mysql = MySQL(app)
 
@@ -41,7 +42,7 @@ def loginusuario():
         # Dar los datos a MySQL; Cursor para saber 
         # dónde está la conexión
         cur = mysql.connection.cursor()
-        cur.execute('SELECT * FROM usuario WHERE nickname=%s', (correo,))
+        cur.execute('SELECT * FROM usuario WHERE correo=%s', (correo,))
         # Función para guardar en 'user' un elemento
         user = cur.fetchone()
         print(user)
@@ -54,12 +55,12 @@ def loginusuario():
                 session['S_id'] = user[0]
                 session['S_privilegio'] = user[4]
                 if session['S_privilegio'] == 'admin':
-                    return redirect(url_for('admin')) #"<h1> Accediste como admin </h1>" #
-                #else:
-                    #return render_template('inicio.html')
-            #else:
-            flash("Error. La contraseña no es correcta.")
-            return redirect(url_for('login'))
+                    return redirect(url_for('admin')) 
+                else:
+                    return redirect(url_for('inicio'))
+            else:
+                flash("Error. La contraseña no es correcta.")
+                return redirect(url_for('login'))
         else:
             flash("El usuario no existe.")
             return redirect(url_for('login'))
@@ -105,9 +106,10 @@ def inicio():
             return render_template('inicio.html')
         else:
             flash('Esta ruta corresponde a usuario.')
+            return redirect(url_for('admin'))
     else:
         flash('No has iniciado sesión aún.')
-        return render_template('login.html')
+        return redirect(url_for('login'))
 
 
 # ---------------------- #
@@ -115,12 +117,12 @@ def inicio():
 # ------ ADMIN ------ #
 @app.route('/admin')
 def admin():
-    #if session['S_privilegio'] == 'admin':
+    if session['S_privilegio'] == 'admin':
         return render_template('dashboard.html')
     
-    #else:
-        #flash('No tienes autorización para ingresar a esta ruta.')
-        #return render_template('inicio.html')
+    else:
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return redirect(url_for('inicio'))
         
 
 @app.route('/admin/books')
@@ -133,9 +135,34 @@ def books():
     else:
         flash('No tienes autorización para ingresar a esta ruta.')
         return render_template('inicio.html')
-        
     
-    
+@app.route('/admin/books/<int:id>')
+def ViewBook():
+    if session['S_privilegio'] == 'admin':
+        book = Handler.readBooks(id)
+        return render_template('', book = book)
+
+    else:
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return render_template('inicio.html')
+
+@app.route('/admin/books/deleteQuery')
+def deleteBookQuery():
+   if request.method == 'POST':
+
+       return
+       
+@app.route('/admin/books/add')
+def addBook():
+    if session['S_privilegio'] == 'admin':
+        books = Handler.readBooks(None)
+        print(books)
+        return render_template('index.html', data_books=books)
+
+    else:
+        flash('No tienes autorización para ingresar a esta ruta.')
+        return render_template('inicio.html')
+
 @app.route('/admin/users')
 def ViewUsers():
     if session['S_privilegio'] == 'usuario':

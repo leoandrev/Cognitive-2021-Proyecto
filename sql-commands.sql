@@ -18,7 +18,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table Categoria
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS Categoria ;
+DROP TABLE IF EXISTS Categoria;
 
 CREATE TABLE IF NOT EXISTS Categoria (
   idCategoria INT NOT NULL AUTO_INCREMENT,
