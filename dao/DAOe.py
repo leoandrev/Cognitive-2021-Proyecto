@@ -1,24 +1,5 @@
 import pymysql
 
-class DAOUsuario:
-    def connect(self):
-        return pymysql.connect(host="localhost",user="root",password="",db="db_poo" )
-
-    def update(self, id, data):
-        con = DAOUsuario.connect(self)
-        cursor = con.cursor()
-
-        try:
-            cursor.execute("UPDATE usuario set nombre = %s, telefono = %s, email = %s where id = %s", (data['nombre'],data['telefono'],data['email'],id,))
-            con.commit()
-            return True
-        except:
-            con.rollback()
-            return False
-        finally:
-            con.close()
-
-
 class Manager:
     def connect(self):
         return pymysql.connect(host="localhost",user="root",password="",db="db_prueba1")
@@ -29,7 +10,7 @@ class Manager:
 
         try:
             if id == None:
-                cursor.execute("SELECT * FROM usuario where privilegio = 'usuario' order by nombre asc")
+                cursor.execute("SELECT * FROM usuario where privilegio = 'usuario' order by correo asc")
             else:
                 cursor.execute("SELECT * FROM usuario where id = %s && privilegio = 'usuario'", (id,))
             return cursor.fetchall()
@@ -82,9 +63,7 @@ class Manager:
         except:
             return ()
         finally:
-            con.close()
-
-    
+            con.close()    
 
     def readBooks(self, id): # FALTA PARA EL USUARIO. PARA EL ADMIN ESTA LISTO
         con = Manager.connect(self)
@@ -94,7 +73,7 @@ class Manager:
             if id == None:
                 cursor.execute("SELECT * FROM libro order by nombre asc")
             else:
-                cursor.execute("SELECT * FROM libro where id = %s order by nombre asc", (id,))
+                cursor.execute("SELECT * FROM libro where idLibro = %s", (id,))
             return cursor.fetchall()
             
         except:
@@ -107,12 +86,43 @@ class Manager:
         cursor = con.cursor()
 
         try:
-            cursor.execute("INSERT INTO libro(nombre, anio, edicion, ISBN) VALUES(%s, %s, %s, %s)", (data['nombre'], data['anio'], data['edicion'], data['ISBN'],))
+            cursor.execute("INSERT INTO libro(nombre, autor, anio, edicion, ISBN) VALUES(%s, %s, %s, %s, %s)", (data['nombre'], data["autor"], data['anio'], data['edicion'], data['ISBN'],))
             con.commit()
             return True
         except:
             con.rollback()
             return False
+        finally:
+            con.close()
+
+    def findCategory(self, categoria, id):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            if categoria == None:
+                cursor.execute("SELECT nombre FROM Categoria where idCategoria = %s", (id, ))
+            if id == None:
+                cursor.execute("SELECT idCategoria FROM Categoria where nombre = %s", (categoria, ))
+            return cursor.fetchall()
+
+        except:
+            return ()
+        
+        finally:
+            con.close()
+
+    def finddetallePrestamo(self, id):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("SELECT devuelto FROM detallePrestamo where Libro_idLibro = %s", (id, ))
+            return cursor.fetchall()
+
+        except:
+            return ()
+        
         finally:
             con.close()
 
@@ -121,7 +131,7 @@ class Manager:
         cursor = con.cursor()
 
         try:
-            cursor.execute("DELETE FROM libro where id = %s", (id,))
+            cursor.execute("DELETE FROM libro where idLibro = %s", (id,))
             con.commit()
             return True
         except:
@@ -130,12 +140,12 @@ class Manager:
         finally:
             con.close()
 
-    def update(self, id, data):
-        con = DAOUsuario.connect(self)
+    def updateBook(self, data):
+        con = Manager.connect(self)
         cursor = con.cursor()
 
         try:
-            cursor.execute("UPDATE usuario set nombre = %s, telefono = %s, email = %s where id = %s", (data['nombre'],data['telefono'],data['email'],id,))
+            cursor.execute("UPDATE libro set nombre = %s, autor = %s, anio = %s, edicion = %s, ISBN = %s, Categoria_idCategoria = %s where idLibro = %s", (data[0],data[1],data[2],data[3],data[4],data[5],data[6],))
             con.commit()
             return True
         except:

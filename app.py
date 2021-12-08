@@ -28,17 +28,11 @@ Handler = Manager()
 
 
 # ------ RUTAS Y FUNCIONES ------ #
-@app.route('/')
+@app.route('/', methods=["POST"])
 def login():
-    return render_template('login.html')
-    
-
-@app.route('/loginusuario', methods=["POST"])
-def loginusuario():
     if request.method == 'POST':
         correo = request.form['correoh']
         contraseña = request.form['contrash']
-        ## session['user'] = correo
         # Dar los datos a MySQL; Cursor para saber 
         # dónde está la conexión
         cur = mysql.connection.cursor()
@@ -68,12 +62,8 @@ def loginusuario():
     else:
         return render_template('login.html')
 
-@app.route('/register')
+@app.route('/register', methods=["POST"])
 def registrar():
-    return render_template("registrar.html")
-
-@app.route('/registerusuario', methods=["POST"])
-def registrar_usuario():
     if request.method == 'POST':
         usuario = request.form['usuarioh']
         correo = request.form['correoh']
@@ -88,6 +78,8 @@ def registrar_usuario():
         mysql.connection.commit()
         flash('Usuario registrado satisfactoriamente')
         return redirect(url_for('login'))
+    return render_template("registrar.html")
+    
 
 @app.route('/logout')
 def logout():
@@ -117,13 +109,19 @@ def inicio():
 # ------ ADMIN ------ #
 @app.route('/admin')
 def admin():
-    if session['S_privilegio'] == 'admin':
-        return render_template('dashboard.html')
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            books = Handler.readBooks(None)
+            users = Handler.readUsers(None)
+            return render_template('index.html', data_books=books, data_users=users)
     
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return redirect(url_for('inicio'))
+
     else:
-        flash('No tienes autorización para ingresar a esta ruta.')
-        return redirect(url_for('inicio'))
-        
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
 @app.route('/admin/books')
 def books():
@@ -135,54 +133,147 @@ def books():
     else:
         flash('No tienes autorización para ingresar a esta ruta.')
         return render_template('inicio.html')
-    
-@app.route('/admin/books/<int:id>')
-def ViewBook():
-    if session['S_privilegio'] == 'admin':
-        book = Handler.readBooks(id)
-        return render_template('', book = book)
 
-    else:
-        flash('No tienes autorización para ingresar a esta ruta.')
-        return render_template('inicio.html')
-
-@app.route('/admin/books/deleteQuery')
-def deleteBookQuery():
-   if request.method == 'POST':
-
-       return
-       
 @app.route('/admin/books/add')
 def addBook():
-    if session['S_privilegio'] == 'admin':
-        books = Handler.readBooks(None)
-        print(books)
-        return render_template('index.html', data_books=books)
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            if request.method == 'POST':
+                nombre = request.method["nombre"]
+                autor = request.method["autor"]
+                anio = request.method["anio"]
+                edicion = request.method["edicion"]
+                ISBN = request.method["ISBN"]
+                categoria = request.method["categoria"]
+                idCategoria = Handler.findCategory(categoria, None)
+                idCategoria = idCategoria[0]
+                data = [nombre, autor, anio, edicion, ISBN, idCategoria]
+                
+                if Handler.insertBook(data):
+                    flash('Libro añadido :)')
+                    return redirect(url_for('admin'))
+                else:
+                    flash('Inserción fallida. Vuelva a intentar')
+                    return redirect(url_for('addBook'))
 
+            return render_template('agregarlibro.html')
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return render_template('inicio.html')
+    
     else:
-        flash('No tienes autorización para ingresar a esta ruta.')
-        return render_template('inicio.html')
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
+
+@app.route('/admin/books/update/<int:id>', methods=['POST'])
+def bookaddRequest(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            if request.method == 'POST':
+                id = id
+                nombre = request.form['nombre']
+                print(nombre)
+                autor = request.form["autor"]
+                anio = request.form["anio"]
+                edicion = request.form["edicion"]
+                ISBN = request.form["ISBN"]
+                categoria = request.form["categoria"]
+                idCategoria = Handler.findCategory(categoria, None)
+                idCategoria = idCategoria[0]
+                idCategoria = idCategoria[0]
+                data = [nombre, autor, anio, edicion, ISBN, idCategoria, id]
+                
+                if Handler.updateBook(data):
+                    flash('Libro actualizado :)')
+                    return redirect(url_for('admin'))
+                else:
+                    flash('Actualización fallida. Vuelva a intentar')
+                    return redirect(url_for('admin'))
+
+            # En caso el método no sea POST
+            book = Handler.readBooks(id)
+            libro = book[0]
+            id = int(libro[7])
+            category = Handler.findCategory(None, id)
+            category = category[0]
+            return render_template('update.html', books = book, category=category)
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return redirect(url_for('inicio'))
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
+
+
+@app.route('/admin/books/delete/<int:id>')
+def deleteBook(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            if request.method == 'POST':
+                id = request.form["id"]
+                detalle = Handler.finddetallePrestamo(id)
+                if len(detalle) != 0:
+                    flash('Operación fallida. Hay préstamos pendientes.')
+                else:
+                    if Handler.deleteBook(id):
+                        flash('Operación exitosa')
+                    else:
+                        flash('Operación fallida. Vuelva a intentar.')
+                
+                return redirect(url_for('books'))
+                    
+            # En caso el método no sea POST
+            book = Handler.readBooks(id)
+            libro = book[0]
+            id = int(libro[7])
+            category = Handler.findCategory(None, id)
+            category = category[0]
+            return render_template('update.html', books = book, category=category)
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return redirect(url_for('inicio'))
+    
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
+
 
 @app.route('/admin/users')
-def ViewUsers():
-    if session['S_privilegio'] == 'usuario':
-        flash('No tienes autorización para ingresar a esta ruta.')
-        return render_template('admin/dashboard.html')
+def Users():
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            data = Handler.readUsers(None)            
+            return render_template('admin/users.html', data_usuarios=data)
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return render_template('admin/dashboard.html')
+            
 
     else:
-        data = Handler.readUsers(None)
-        return render_template('admin/users.html', data_usuarios=data)
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
 
 @app.route('/admin/users/<int:id>')
-def ViewSingleUser(id):
-    if session['S_privilegio'] == 'usuario':
-        flash('No tienes autorización para ingresar a esta ruta.')
-        return render_template('admin/dashboard.html')
+def User(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            data = Handler.readUsers(id)            
+            # prestamos = Hanlder.
+            return render_template('admin/users.html', data_usuario=data)
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return render_template('admin/dashboard.html')
+            
 
     else:
-        user = Handler.readUsers(id)
-        return render_template('admin/user.html', data_usuario = user)
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
 
 # ------------------- #

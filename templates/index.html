@@ -33,7 +33,7 @@
                             </ul>
                         </li>
                     </ul>
-                    <form class="d-flex">
+                    <form class="d-flex" action="/logout">
                         <button class="btn btn-outline-dark" type="submit">
                             <i class="bi-cart-fill me-1"></i>
                             Cart
@@ -53,6 +53,7 @@
             </div>
         </header>
         <!-- Section-->
+        <div class="container">
         <section class="py-5">
             <div class="container px-4 px-lg-5 mt-5">
                 <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
@@ -84,6 +85,69 @@
                 </div>
             </div>
         </section>
+        
+
+            <section class="content-header">
+              {% for message in get_flashed_messages()%}
+              <div class="alert alert-info alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                {{ message }}
+              </div>
+              {% endfor%}
+            </section>
+          
+            <section class="content">
+              <div class="box box-primary">
+                <div class="box-header">
+                  <a href="/admin/addusuario">
+                    <center>
+                      <button type="button" class="btn btn-primary btn-flat">
+                        <span class="glyphicon glyphicon-plus"></span> Nuevo Usuario
+                      </button>
+                    </center>
+                  </a>
+                </div>
+          
+                <div class="box-body">
+                  <table id="dataphone" class="table table-bordered table-striped">
+                    <thead align="center">
+                      <tr>
+                        <th>Correo</th>
+                      </tr>
+                    </thead>
+          
+                    <tbody>
+                      {% if data_users|length == 0 %}
+                      <tr>
+                        <td>No Users Data</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      {% else %}
+                      <tr>
+                        {% for usuario in data_users %}
+                        <td>{{ usuario[1] }}</td>
+                        <td align="center">
+                          <a href="/admin/updateusuario/{{ usuario[0]}}">
+                            <button type="button" class="btn btn-sm btn-warning btn-flat" title="Update"><span
+                                class="glyphicon glyphicon-pencil"></span></button>
+                          </a>
+                          <a href="/admin/deleteusuario/{{ usuario[0]}}">
+                            <button type="button" class="btn btn-sm btn-danger btn-flat" title="Delete"><span
+                                class="glyphicon glyphicon-remove"></span></button>
+                          </a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                      {% endif%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          
+          </div>
         <!-- Footer-->
         <footer class="py-5 bg-dark">
             <div class="container"><p class="m-0 text-center text-white">Copyright &copy; Your Website 2021</p></div>
