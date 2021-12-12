@@ -1,6 +1,5 @@
-from re import A
 from flask import Flask, render_template
-from flask_mysqldb import MySQL, MySQLdb
+from flask_mysqldb import MySQL
 from flask import request
 # Redireccionar
 from flask import redirect, url_for, session
@@ -8,6 +7,7 @@ from flask import redirect, url_for, session
 from flask import flash
 # import bcrypt
 from dao.DAOe import Manager
+from functions import *
 
 app = Flask(__name__)
 
@@ -24,12 +24,16 @@ app.secret_key = 'mysecretkey'
 
 # Semilla para encriptamiento
 # semilla = bcrypt.gensalt()
-Handler = Manager()
+Db = Manager()
 
 
 # ------ RUTAS Y FUNCIONES ------ #
-@app.route('/', methods=["POST"])
+@app.route('/')
 def login():
+    return render_template('login.html')
+
+@app.route('/login', methods=["POST"])
+def loginRequest():
     if request.method == 'POST':
         correo = request.form['correoh']
         contraseña = request.form['contrash']
@@ -49,7 +53,7 @@ def login():
                 session['S_id'] = user[0]
                 session['S_privilegio'] = user[4]
                 if session['S_privilegio'] == 'admin':
-                    return redirect(url_for('admin')) 
+                    return redirect(url_for('books')) 
                 else:
                     return redirect(url_for('inicio'))
             else:
@@ -58,12 +62,13 @@ def login():
         else:
             flash("El usuario no existe.")
             return redirect(url_for('login'))
-        
-    else:
-        return render_template('login.html')
 
-@app.route('/register', methods=["POST"])
-def registrar():
+@app.route('/register')
+def register():    
+    return render_template("registrar.html")
+    
+@app.route('/registerRequest', methods=["POST"])
+def registerRequest():
     if request.method == 'POST':
         usuario = request.form['usuarioh']
         correo = request.form['correoh']
@@ -78,8 +83,6 @@ def registrar():
         mysql.connection.commit()
         flash('Usuario registrado satisfactoriamente')
         return redirect(url_for('login'))
-    return render_template("registrar.html")
-    
 
 @app.route('/logout')
 def logout():
@@ -91,7 +94,7 @@ def logout():
 
 
 # ------ USUARIO ------ #
-@app.route('/inicio')
+@app.route('/main')
 def inicio():
     if 'S_id' in session:
         if session['S_privilegio'] == 'usuario':
@@ -103,6 +106,25 @@ def inicio():
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
+@app.route('/books')
+def UserBooks():
+    if 'S_id' in session:
+        if session['S_privilegio'] == 'usuario':
+            # Traer libros prestados
+            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 0)
+            print(detalles)
+            Libros_pendientes = User_verLibros(detalles)
+            print('TERMINADO')
+            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
+            Libros_mora = User_verLibros(detalles)
+            # Traer préstamos con mora
+            return render_template('librodummy.html', Libros_pendientes=Libros_pendientes, Libros_mora=Libros_mora)
+        else:
+            flash('Esta ruta corresponde a usuario.')
+            return redirect(url_for('admin'))
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
 # ---------------------- #
 
@@ -111,8 +133,8 @@ def inicio():
 def admin():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            books = Handler.readBooks(None)
-            users = Handler.readUsers(None)
+            books = Db.get_Libros(None)
+            users = Db.get_Users(None)
             return render_template('index.html', data_books=books, data_users=users)
     
         else:
@@ -126,7 +148,7 @@ def admin():
 @app.route('/admin/books')
 def books():
     if session['S_privilegio'] == 'admin':
-        books = Handler.readBooks(None)
+        books = Db.get_Libros(None)
         print(books)
         return render_template('index.html', data_books=books)
 
@@ -138,25 +160,9 @@ def books():
 def addBook():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            if request.method == 'POST':
-                nombre = request.method["nombre"]
-                autor = request.method["autor"]
-                anio = request.method["anio"]
-                edicion = request.method["edicion"]
-                ISBN = request.method["ISBN"]
-                categoria = request.method["categoria"]
-                idCategoria = Handler.findCategory(categoria, None)
-                idCategoria = idCategoria[0]
-                data = [nombre, autor, anio, edicion, ISBN, idCategoria]
-                
-                if Handler.insertBook(data):
-                    flash('Libro añadido :)')
-                    return redirect(url_for('admin'))
-                else:
-                    flash('Inserción fallida. Vuelva a intentar')
-                    return redirect(url_for('addBook'))
-
-            return render_template('agregarlibro.html')
+            category = Db.findCategory(None, id)
+            category = category[0]
+            return render_template('agregarlibro.html', categories = category)
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
@@ -166,38 +172,46 @@ def addBook():
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
-@app.route('/admin/books/update/<int:id>', methods=['POST'])
-def bookaddRequest(id):
+@app.route('/admin/books/addRequest', methods=["POST"])
+def addBookRequest():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
             if request.method == 'POST':
-                id = id
-                nombre = request.form['nombre']
-                print(nombre)
-                autor = request.form["autor"]
-                anio = request.form["anio"]
-                edicion = request.form["edicion"]
-                ISBN = request.form["ISBN"]
-                categoria = request.form["categoria"]
-                idCategoria = Handler.findCategory(categoria, None)
+                nombre = request.method["nombre"]
+                autor = request.method["autor"]
+                anio = request.method["anio"]
+                edicion = request.method["edicion"]
+                ISBN = request.method["ISBN"]
+                categoria = request.method["categoria"]
+                idCategoria = Db.findCategory(categoria, None)
                 idCategoria = idCategoria[0]
-                idCategoria = idCategoria[0]
-                data = [nombre, autor, anio, edicion, ISBN, idCategoria, id]
+                data = [nombre, autor, anio, edicion, ISBN, idCategoria]
                 
-                if Handler.updateBook(data):
-                    flash('Libro actualizado :)')
+                if Db.insert_Book(data):
+                    flash('Libro añadido :)')
                     return redirect(url_for('admin'))
                 else:
-                    flash('Actualización fallida. Vuelva a intentar')
-                    return redirect(url_for('admin'))
+                    flash('Inserción fallida. Vuelva a intentar')
+                    return redirect(url_for('addBook'))
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return render_template('inicio.html')
+    
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
-            # En caso el método no sea POST
-            book = Handler.readBooks(id)
+@app.route('/admin/books/update/<int:id>')
+def updateBook(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':            
+            book = Db.get_Libros(id)
             libro = book[0]
             id = int(libro[7])
-            category = Handler.findCategory(None, id)
+            category = Db.find_Category(None, id)
             category = category[0]
-            return render_template('update.html', books = book, category=category)
+            # print(book)
+            return render_template('update.html', book = book, category=category)
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
@@ -206,31 +220,75 @@ def bookaddRequest(id):
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
+@app.route('/admin/books/updateRequest/<int:id>', methods=['POST'])
+def updateBookRequest(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            if request.method == 'POST':
+                nombre = request.form['nombre']
+                print(nombre)
+                autor = request.form["autor"]
+                anio = request.form["anio"]
+                edicion = request.form["edicion"]
+                ISBN = request.form["ISBN"]
+                categoria = request.form["categoria"]
+
+                idCategoria = Db.findCategory(categoria, None)
+                idCategoria = (idCategoria[0])[0]
+                data = [nombre, autor, anio, edicion, ISBN, idCategoria, id]
+                
+                if Db.updateBook(data):
+                    flash('Libro actualizado :)')
+                    return redirect(url_for('admin'))
+                else:
+                    flash('Actualización fallida. Vuelva a intentar')
+                    return redirect(url_for('admin'))
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return redirect(url_for('inicio'))
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
 @app.route('/admin/books/delete/<int:id>')
+def deleteBookRequest(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':            
+            book = Db.get_Libros(id)
+            libro = book[0]
+            id = int(libro[7])
+            category = Db.find_Category(None, id)
+            category = category[0]
+            return render_template('update.html', books = book, category=category)
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return redirect(url_for('inicio'))
+    
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
+
+@app.route('/admin/books/deleteRequest/<int:id>', methods=["POST"]) #FALTA
 def deleteBook(id):
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
             if request.method == 'POST':
-                id = request.form["id"]
-                detalle = Handler.finddetallePrestamo(id)
-                if len(detalle) != 0:
+                #id = request.form["id"]
+                Prestamos = Db.Prestamopendiente(id)
+                Prestamos=(Prestamos[0])[0]
+                detalles = Db.idLibro_From_detallePrestamo(Prestamos)
+
+                if len(detalles) != 0:
                     flash('Operación fallida. Hay préstamos pendientes.')
                 else:
-                    if Handler.deleteBook(id):
+                    if Db.deleteBook(id):
                         flash('Operación exitosa')
                     else:
                         flash('Operación fallida. Vuelva a intentar.')
                 
                 return redirect(url_for('books'))
-                    
-            # En caso el método no sea POST
-            book = Handler.readBooks(id)
-            libro = book[0]
-            id = int(libro[7])
-            category = Handler.findCategory(None, id)
-            category = category[0]
-            return render_template('update.html', books = book, category=category)
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
@@ -245,7 +303,7 @@ def deleteBook(id):
 def Users():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            data = Handler.readUsers(None)            
+            data = Db.get_Users(None)            
             return render_template('admin/users.html', data_usuarios=data)
 
         else:
@@ -262,19 +320,44 @@ def Users():
 def User(id):
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            data = Handler.readUsers(id)            
-            # prestamos = Hanlder.
-            return render_template('admin/users.html', data_usuario=data)
+            data = Db.get_Users(id)
+            detalles, prestamos = User_get_Prestamos_y_detalles(id, 1)
+            Libros_mora = User_verLibros(detalles)
+            return render_template('admin/users.html', data_usuario=data, Libros_mora=Libros_mora)
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('admin/dashboard.html')
-            
+            return render_template('admin/dashboard.html')            
 
     else:
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
+@app.route('/admin/users/delete/<int:id>') # LISTA PARA PROBARSE
+def deleteUserRequest(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            idPrestamos = Db.idPrestamo_From_Prestamo(id)
+            print(idPrestamos)
+            # Eliminacion de detallePrestamo
+            for i in idPrestamos:
+                Db.delete_detallePrestamo(idPrestamos[i])
+            
+            # Eliminacion de Prestamos
+            Db.delete_Prestamo(id)
+            # Eliminacion de Usuario
+            Db.deleteUser(id)
+            flash('Operación ejecutada.')
+
+            return redirect(url_for('Users'))
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return render_template('admin/dashboard.html')            
+
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
 # ------------------- #
 

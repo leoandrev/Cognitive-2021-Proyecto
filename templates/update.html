@@ -54,10 +54,11 @@
         </header>
         <div class="containter">
         <section class="content">
-        {% if books|length == 0 %}
+        {% if book|length == 0 %}
             No data
         {% else %}
-        <form class="form-horizontal" method="POST" action="/admin/books/update/{{ book[0] }}">
+        {% for book in book%}
+        <form class="form-horizontal" method="POST" action="/admin/books/updateRequest/{{ book[0] }}">
 	    
             <div class="box-body">
                 <div class="form-group" >
@@ -119,6 +120,7 @@
                 <input name="update" type="submit" class="btn btn-info pull-right" value="Update">
             </div>
         </form>
+        {% endfor %}
         {% endif %}
 	    </section>
         </div>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    Aquí están tus libros XD
+    <h2>Libros con préstamos pendientes</h2>
+    {% if Libros_pendientes|length == 0 %}
+    No existen préstamos pendientes
+    {% else %}
+    {% for libro in Libros_pendientes %}
+    {{ libro[1] }}
+    <ul>
+        <li>{{ libro[2] }}</li>
+        <li>{{ libro[3] }}</li>
+    </ul>
+    {% endfor %}
+    {% endif %}
+
+    <h2>Préstamos con mora</h2>
+    {% if Libros_mora|length == 0 %}
+    No existen préstamos con mora :)
+    {% else %}
+    {% for libro in Libros_mora %}
+    {{ libro[1] }}
+    <ul>
+        <li>{{ libro[2] }}</li>
+        <li>{{ libro[3] }}</li>
+    </ul>
+    {% endfor %}
+    {% endif %}
+
+
+    <a href="/main" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Main</a>
+    <a href="/logout" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Logout</a>
+</body>
+</html>

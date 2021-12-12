@@ -4,7 +4,7 @@ class Manager:
     def connect(self):
         return pymysql.connect(host="localhost",user="root",password="",db="db_prueba1")
 
-    def readUsers(self, id):
+    def get_Users(self, id):
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -19,7 +19,7 @@ class Manager:
         finally:
             con.close() # Se cierra la conexion en caso de error abrupto
 
-    def insertUser(self, data, confirmacion): #AQUI FALTA
+    def insert_User(self, data, confirmacion): #AQUI FALTA
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -38,7 +38,7 @@ class Manager:
         finally:
             con.close()
 
-    def deleteUser(self, id): # AQUI FALTA
+    def delete_User(self, id): # AQUI FALTA
         con = Manager.connect(self)
         cursor = con.cursor()        
 
@@ -53,7 +53,7 @@ class Manager:
         finally:
             con.close()
 
-    def readPrestamo(self, id):
+    def get_Prestamo(self, id):
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -63,9 +63,9 @@ class Manager:
         except:
             return ()
         finally:
-            con.close()    
+            con.close()
 
-    def readBooks(self, id): # FALTA PARA EL USUARIO. PARA EL ADMIN ESTA LISTO
+    def get_Libros(self, id): # FALTA PARA EL USUARIO. PARA EL ADMIN ESTA LISTO
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -81,7 +81,7 @@ class Manager:
         finally:
             con.close() # Se cierra la conexion en caso de error abrupto
 
-    def insertBook(self, data): # AQUI FALTA
+    def insert_Book(self, data): # AQUI FALTA
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -95,7 +95,7 @@ class Manager:
         finally:
             con.close()
 
-    def findCategory(self, categoria, id):
+    def find_Category(self, categoria, id):
         con = Manager.connect(self)
         cursor = con.cursor()
 
@@ -112,17 +112,75 @@ class Manager:
         finally:
             con.close()
 
-    def finddetallePrestamo(self, id):
+    def idPrestamo_From_Prestamo(self, id):
         con = Manager.connect(self)
         cursor = con.cursor()
 
         try:
-            cursor.execute("SELECT devuelto FROM detallePrestamo where Libro_idLibro = %s", (id, ))
+            cursor.execute("SELECT idPrestamo FROM Prestamo where Usuario_idUsuario = %s", (id,) )
             return cursor.fetchall()
 
         except:
             return ()
         
+        finally:
+            con.close()
+
+    def Prestamo_pendiente(self, id):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("SELECT Prestamo_idPrestamo FROM detallePrestamo where Libro_idLibro = %s && fecha_devolucion > fecha_entrega", (id,) )
+            return cursor.fetchall()
+
+        except:
+            return ()
+        
+        finally:
+            con.close()
+
+    def idLibro_From_detallePrestamo(self, id, consulta):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            if consulta == None:
+                cursor.execute("SELECT Libro_idLibro FROM detallePrestamo where Prestamo_idPrestamo = %s", (id,) )
+            else:
+                if consulta == 0:
+                    cursor.execute("SELECT Libro_idLibro FROM detallePrestamo where Prestamo_idPrestamo = %s && fecha_devolucion is NULL", (id,) )
+                else:
+                    cursor.execute("SELECT Libro_idLibro FROM detallePrestamo where Prestamo_idPrestamo = %s && fecha_devolucion > fecha_entrega", (id,) )
+            
+            return cursor.fetchall()
+        except:
+            return ()
+        
+        finally:
+            con.close()
+
+    def delete_detallePrestamo(self, id):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("DELETE FROM detallePrestamo where Prestamo_idPrestamo = %s", (id,))
+            con.commit()
+        except:
+            con.rollback()
+        finally:
+            con.close()
+
+    def delete_Prestamo(self, id):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("DELETE FROM Prestamo where Usuario_idUsuario = %s", (id,))
+            con.commit()
+        except:
+            con.rollback()
         finally:
             con.close()
 
