@@ -8,6 +8,7 @@ from flask import flash
 # import bcrypt
 from dao.DAOe import Manager
 from functions import *
+from datetime import date
 
 app = Flask(__name__)
 
@@ -119,6 +120,48 @@ def UserBooks():
             Libros_mora = User_verLibros(detalles)
             # Traer préstamos con mora
             return render_template('librodummy.html', Libros_pendientes=Libros_pendientes, Libros_mora=Libros_mora)
+        else:
+            flash('Esta ruta corresponde a usuario.')
+            return redirect(url_for('admin'))
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
+
+@app.route('/books/clearDebt')
+def clearDebt():
+    if 'S_id' in session:
+        if session['S_privilegio'] == 'usuario':
+            # Traer libros con mora
+            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
+            # print(detalles)
+            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
+            Libros_mora = User_verLibros(detalles)
+            # Traer préstamos con mora
+            for i in range(len(Libros_mora)):
+                Db.delete_detallePrestamo(Libros_mora[i])
+            return redirect(url_for('UserBooks'))
+        else:
+            flash('Esta ruta corresponde a usuario.')
+            return redirect(url_for('admin'))
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
+
+@app.route('/books/giveBack/<int:id>')
+def giveBackBook(id):
+    if 'S_id' in session:
+        if session['S_privilegio'] == 'usuario':
+            # Traer detallePrestamo asociado a idLibro y Usuario_idUsuario
+            #idsPrestamo = Db.idPrestamo_From_Prestamo(id)
+            detalles, prestamos = User_get_Prestamos_y_detalles(id, )
+            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
+            # print(detalles)
+            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
+            Libros_mora = User_verLibros(detalles)
+            # Traer préstamos con mora
+            for i in range(len(Libros_mora)):
+                Db.delete_detallePrestamo(Libros_mora[i])
+            return redirect(url_for('UserBooks'))
         else:
             flash('Esta ruta corresponde a usuario.')
             return redirect(url_for('admin'))
@@ -251,6 +294,7 @@ def updateBookRequest(id):
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
+
 @app.route('/admin/books/delete/<int:id>')
 def deleteBookRequest(id):
     if 'S_privilegio' in session:
@@ -270,25 +314,28 @@ def deleteBookRequest(id):
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
-@app.route('/admin/books/deleteRequest/<int:id>', methods=["POST"]) #FALTA
+@app.route('/admin/books/deleteRequest/<int:id>') #HECHA
 def deleteBook(id):
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            if request.method == 'POST':
-                #id = request.form["id"]
-                Prestamos = Db.Prestamopendiente(id)
-                Prestamos=(Prestamos[0])[0]
-                detalles = Db.idLibro_From_detallePrestamo(Prestamos)
-
-                if len(detalles) != 0:
-                    flash('Operación fallida. Hay préstamos pendientes.')
-                else:
-                    if Db.deleteBook(id):
-                        flash('Operación exitosa')
-                    else:
-                        flash('Operación fallida. Vuelva a intentar.')
-                
+            ids_detallePrestamo = Db.iddetallePrestamo_from_detallePrestamo(id)
+            # print('IDs de detallePrestamo:', ids_detallePrestamo)
+            # ID's de detallePrestamo: ((12,), (15,))
+            if len(ids_detallePrestamo) > 0:
+                flash('No puede eliminarse el libro. Hay préstamos asociados.')
                 return redirect(url_for('books'))
+            else:
+                Db.deleteBook(id)
+                flash('Operacion hecha.')
+                return redirect(url_for('books'))
+            # if len(detalles) != 0:
+            #     flash('Operación fallida. Hay préstamos pendientes.')
+            # else:
+            #     if Db.deleteBook(id):
+            #         flash('Operación exitosa')
+            #     else:
+            #         flash('Operación fallida. Vuelva a intentar.')
+            
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
@@ -337,14 +384,20 @@ def User(id):
 def deleteUserRequest(id):
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            idPrestamos = Db.idPrestamo_From_Prestamo(id)
-            print(idPrestamos)
+            detalles, prestamos = Db.User_get_Prestamos_y_detalles(id, None)
+            detalles = list(detalles)
+            prestamos = list(prestamos)
+            print('IDs de detallePrestamos asociados al usuario:',detalles)
+            print('IDs de Prestamos asociados al usuario:',prestamos)
             # Eliminacion de detallePrestamo
-            for i in idPrestamos:
-                Db.delete_detallePrestamo(idPrestamos[i])
-            
+            if len(detalles) > 0:
+                for i in range(len(prestamos)):
+                    Db.delete_detallePrestamo(detalles[i])
             # Eliminacion de Prestamos
-            Db.delete_Prestamo(id)
+            if len(prestamos) > 0:
+                for i in range(len(prestamos)):
+                    Db.delete_Prestamo(prestamos[i])
+            
             # Eliminacion de Usuario
             Db.deleteUser(id)
             flash('Operación ejecutada.')
@@ -353,7 +406,7 @@ def deleteUserRequest(id):
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('admin/dashboard.html')            
+            return render_template('admin/dashboard.html')
 
     else:
         flash('No has iniciado sesión aún.')

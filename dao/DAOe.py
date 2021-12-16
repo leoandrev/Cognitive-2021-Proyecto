@@ -198,6 +198,64 @@ class Manager:
         finally:
             con.close()
 
+    def iddetallePrestamo_from_detallePrestamo(self, id):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("SELECT id_detallePrestamo FROM detallePrestamo where Libro_idLibro = %s", (id,) )
+            return cursor.fetchall()
+        except:
+            return ()
+        
+        finally:
+            con.close()
+
+    def giveBack_Book(self, idLibro, idPrestamo):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("SELECT id_detallePrestamo FROM detallePrestamo where Libro_idLibro = %s && Prestamo_idPrestamo = %s", (idLibro, idPrestamo, ) )
+            return cursor.fetchall()
+        except:
+            return ()
+        
+        finally:
+            con.close()
+
+    def registrar_devolucion(self, fecha, id_detallePrestamo):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            cursor.execute("UPDATE detallePrestamo set fecha_devolucion = %s where id_detallePrestamo = %s", (fecha, id_detallePrestamo, ))
+            con.commit()
+            return True
+        except:
+            con.rollback()
+            return False
+        finally:
+            con.close()
+
+    def set_penalidad(self, penalidad, idUsuario):
+        con = Manager.connect(self)
+        cursor = con.cursor()
+
+        try:
+            if penalidad == 1:
+                cursor.execute("UPDATE Usuario set habilitado = 0 where idUsuario = %s", (idUsuario,))
+                con.commit()
+            else:
+                cursor.execute("UPDATE Usuario set habilitado = 1 where idUsuario = %s", (idUsuario,))
+                con.commit()
+            return True
+        except:
+            con.rollback()
+            return False
+        finally:
+            con.close()
+
     def updateBook(self, data):
         con = Manager.connect(self)
         cursor = con.cursor()

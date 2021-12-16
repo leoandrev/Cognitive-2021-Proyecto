@@ -73,6 +73,52 @@ def User_verLibros(tupla_detalles):
     else:
         return tuple(Libros)
 
+def User_registrar_devolucion(sesion, idLibro, fecha):
+    detalles = []
+    # PRIMERO, SE OBTIENEN LOS ID'S DE
+    # LOS PRESTAMOS HECHOS POR EL USUARIO
+    idPrestamo = Db.idPrestamo_From_Prestamo(sesion)
+    idPrestamo = list(idPrestamo)
+
+    # VERIFICACION
+    #print('Lista:', idPrestamo)
+    #print('Longitud: ', len(idPrestamo))
+
+    len_idPrestamo = len(idPrestamo)
+    print(idPrestamo)
+    for i in range(len_idPrestamo):
+        idPrestamo[i] = (idPrestamo[i])[0]
+
+    # SEGUNDO, SE OBTIENEN LOS DETALLES DE
+    # PRESTAMO RELACIONADOS A ESOS PRESTAMOS OBTENIDOS
+    # idPrestamo=tuple(idPrestamo)
+    ids_detalle=[]
+    for i in range(len_idPrestamo):
+        detalle = Db.giveBack_Book(idLibro, idPrestamo[i])
+        if len(detalle) != 0:
+            ids_detalle.append(detalle[0])
+
+    # Registro de la devolucion
+    if Db.registrar_devolucion(fecha, ids_detalle[0]):
+        
+    else:
+        return 'ERROR. No se pudo hacer la devolución.'
+
+
+def existenPrestamosAsociados(id_Libro):
+    ids_detallePrestamo = Db.iddetallePrestamo_from_detallePrestamo(id_Libro)
+    # print('IDs de detallePrestamo:', ids_detallePrestamo)
+    # ID's de detallePrestamo: ((12,), (15,))
+    if len(ids_detallePrestamo) > 0:
+        ids_detallePrestamo = list(ids_detallePrestamo)
+        for i in range(len(ids_detallePrestamo)):
+            ids_detallePrestamo[i] = (ids_detallePrestamo[i])[0]
+            # ((12,), (15,))
+            #  (12,) = 12
+        print('IDs de detallePrestamo:', ids_detallePrestamo)
+
+    return ids_detallePrestamo
+
 def eliminar_Prestamos_y_detalles(tupla_detalles, tupla_prestamos):
     len_detalles = len(tupla_detalles)
     if len_detalles > 0:
@@ -83,4 +129,3 @@ def eliminar_Prestamos_y_detalles(tupla_detalles, tupla_prestamos):
     if len_prestamos > 0:
         for i in range(len_prestamos):
             Db.delete_Prestamo(tupla_prestamos[i])
-
