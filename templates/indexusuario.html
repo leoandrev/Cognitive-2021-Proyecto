@@ -56,20 +56,13 @@
         <div class="container">
         <section class="py-5">
             <div class="container px-4 px-lg-5 mt-5">
-              <div class="box-header">
-                <a href="/admin/books/add">
-                  <center>
-                    <button type="button" class="btn btn-primary btn-flat">
-                      <span class="glyphicon glyphicon-plus"></span> Nuevo libro
-                    </button>
-                  </center>
-                </a>
-              </div>
+                <h2>Libros con préstamos pendientes</h2>
                 <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-                    {% if data_books|length == 0 %}
+                    
+                    {% if Libros_pendientes|length == 0 %}
                     No data
                     {% else %}
-                        {% for book in data_books %}
+                        {% for book in Libros_pendientes %}
                         <div class="col mb-5">
                             <div class="card h-100">
                                 <!-- Product image-->
@@ -85,7 +78,44 @@
                                 </div>
                                 <!-- Product actions-->
                                 <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="/admin/books/update/{{ book[0] }}">Ver Acciones</a></div>
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="/user/books/reservar/{{ book[0] }}">Devolver</a></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <h2>Préstamos con mora</h2>
+                <a href="/books/clearDebt">
+                    <center>
+                      <button type="button" class="btn btn-primary btn-flat">
+                        <span class="glyphicon glyphicon-plus"></span> Devolver todos
+                      </button>
+                    </center>
+                  </a>
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+    
+                    {% if Libros_mora|length == 0 %}
+                    No data
+                    {% else %}
+                        {% for book in Libros_mora %}
+                        <div class="col mb-5">
+                            <div class="card h-100">
+                                <!-- Product image-->
+                                <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                                <!-- Product details-->
+                                <div class="card-body p-4">
+                                    <div class="text-center">
+                                        <!-- Product name-->
+                                        <h5 class="fw-bolder">{{ book[1] }}</h5>
+                                        <!-- Product price-->
+                                        {% if book[2] == '' %} Desconocido {% else %} {{ book[2] }} {% endif %}- {{ book[3] }}
+                                    </div>
+                                </div>
+                                <!-- Product actions-->
+                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="/user/books/reservar/{{ book[0] }}">Devolver</a></div>
                                 </div>
                             </div>
                         </div>
@@ -96,67 +126,9 @@
         </section>
         
 
-            <section class="content-header">
-              {% for message in get_flashed_messages()%}
-              <div class="alert alert-info alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                {{ message }}
-              </div>
-              {% endfor%}
-            </section>
+           
           
-            <section class="content">
-              <div class="box box-primary">
-                <div class="box-header">
-                  <a href="/admin/addusuario">
-                    <center>
-                      <button type="button" class="btn btn-primary btn-flat">
-                        <span class="glyphicon glyphicon-plus"></span> Nuevo Usuario
-                      </button>
-                    </center>
-                  </a>
-                </div>
-          
-                <div class="box-body">
-                  <table id="dataphone" class="table table-bordered table-striped">
-                    <thead align="center">
-                      <tr>
-                        <th>Correo</th>
-                      </tr>
-                    </thead>
-          
-                    <tbody>
-                      {% if data_users|length == 0 %}
-                      <tr>
-                        <td>No Users Data</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                      </tr>
-                      {% else %}
-                      <tr>
-                        {% for usuario in data_users %}
-                        <td>{{ usuario[1] }}</td>
-                        <td align="center">
-                          <a href="/admin/updateusuario/{{ usuario[0]}}">
-                            <button type="button" class="btn btn-sm btn-warning btn-flat" title="Update"><span
-                                class="glyphicon glyphicon-pencil"></span></button>
-                          </a>
-                          <a href="/admin/deleteusuario/{{ usuario[0]}}">
-                            <button type="button" class="btn btn-sm btn-danger btn-flat" title="Delete"><span
-                                class="glyphicon glyphicon-remove"></span></button>
-                          </a>
-                        </td>
-                      </tr>
-                      {% endfor %}
-                      {% endif%}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </section>
-          
-          </div>
+      
         <!-- Footer-->
         <footer class="py-5 bg-dark">
             <div class="container"><p class="m-0 text-center text-white">Copyright &copy; Your Website 2021</p></div>

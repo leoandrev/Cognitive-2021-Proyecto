@@ -100,6 +100,7 @@ def inicio():
     if 'S_id' in session:
         if session['S_privilegio'] == 'usuario':
             return render_template('inicio.html')
+        
         else:
             flash('Esta ruta corresponde a usuario.')
             return redirect(url_for('admin'))
@@ -119,7 +120,7 @@ def UserBooks():
             detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
             Libros_mora = User_verLibros(detalles)
             # Traer préstamos con mora
-            return render_template('librodummy.html', Libros_pendientes=Libros_pendientes, Libros_mora=Libros_mora)
+            return render_template('indexusuario.html', Libros_pendientes=Libros_pendientes, Libros_mora=Libros_mora)
         else:
             flash('Esta ruta corresponde a usuario.')
             return redirect(url_for('admin'))
@@ -205,7 +206,7 @@ def addBook():
         if session['S_privilegio'] == 'admin':
             category = Db.findCategory(None, id)
             category = category[0]
-            return render_template('agregarlibro.html', categories = category)
+            return render_template('addbook.html', categories = category)
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')

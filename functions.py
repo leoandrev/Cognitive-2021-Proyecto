@@ -99,10 +99,10 @@ def User_registrar_devolucion(sesion, idLibro, fecha):
             ids_detalle.append(detalle[0])
 
     # Registro de la devolucion
-    if Db.registrar_devolucion(fecha, ids_detalle[0]):
+    # if Db.registrar_devolucion(fecha, ids_detalle[0]):
         
-    else:
-        return 'ERROR. No se pudo hacer la devolución.'
+    # else:
+    #     return 'ERROR. No se pudo hacer la devolución.'
 
 
 def existenPrestamosAsociados(id_Libro):
