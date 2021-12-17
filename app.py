@@ -207,7 +207,7 @@ def books():
 
     else:
         flash('No tienes autorización para ingresar a esta ruta.')
-        return render_template('inicio.html')
+        return redirect(url_for('inicio'))
 
 @app.route('/admin/books/add')
 def addBook():
@@ -219,7 +219,7 @@ def addBook():
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('inicio.html')
+            return redirect(url_for('inicio'))
     
     else:
         flash('No has iniciado sesión aún.')
@@ -250,7 +250,7 @@ def addBookRequest():
                     return redirect(url_for('admin'))
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('inicio.html')
+            return redirect(url_for('inicio'))
     
     else:
         flash('No has iniciado sesión aún.')
@@ -359,7 +359,7 @@ def Users():
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('admin/dashboard.html')
+            return redirect(url_for('inicio'))
             
 
     else:
@@ -378,31 +378,50 @@ def User(id):
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('admin/dashboard.html')            
+            return redirect(url_for('inicio'))
 
     else:
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
 @app.route('/admin/users/add')
-def User(id):
+def addUser():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            data = Db.get_Users(id)
-            detalles, prestamos = User_get_Prestamos_y_detalles(id, 1)
-            Libros_mora = User_verLibros(detalles)
-            return render_template('checkuser.html', data_usuario=data, Libros_mora=Libros_mora)
+            return render_template('addusuario.html')
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('admin/dashboard.html')            
+            return redirect(url_for('inicio'))
 
     else:
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
 @app.route('/admin/users/addRequest', methods=["POST"])
-def 
+def addUserRequest():
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            if request.method == 'POST':
+                email = request.form["email"]
+                username = request.form["username"]
+                password = request.form["password"]
+                privilegio = request.form["privilegio"]
+                data = [email, username, password, privilegio]
+
+                if Db.insert_User(data):
+                    flash('Usuario agregado :)')
+                else:
+                    flash('Error al agregar usuario.')
+                return redirect(url_for('addUser'))
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return redirect(url_for('inicio'))
+
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
 
 @app.route('/admin/users/delete/<int:id>') # LISTA PARA PROBARSE
 def deleteUserRequest(id):
@@ -428,7 +447,7 @@ def deleteUserRequest(id):
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
-            return render_template('admin/dashboard.html')
+            return redirect(url_for('inicio'))
 
     else:
         flash('No has iniciado sesión aún.')

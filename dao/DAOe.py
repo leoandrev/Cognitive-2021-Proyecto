@@ -19,19 +19,14 @@ class Manager:
         finally:
             con.close() # Se cierra la conexion en caso de error abrupto
 
-    def insert_User(self, data, confirmacion): #AQUI FALTA
+    def insert_User(self, data): #AQUI FALTA
         con = Manager.connect(self)
         cursor = con.cursor()
 
         try:
-            if confirmacion == 1:
-                cursor.execute("INSERT INTO usuario(correo, nickname, contrasena, privilegio) VALUES(%s, %s, %s, 'usuario')", (data['correo'],data['nickname'],data['contrasena'],))
-                con.commit()
-                return True
-            else:
-                cursor.execute("INSERT INTO usuario(correo, nickname, contrasena, privilegio) VALUES(%s, %s, %s, 'admin')", (data['correo'], data['nickname'],data['contrasena'],))
-                con.commit()
-                return True
+            cursor.execute("INSERT INTO usuario(correo, nickname, contrasena, privilegio) VALUES(%s, %s, %s, %s)", (data[0],data[1],data[2],data[3],))
+            con.commit()
+            return True
         except:
             con.rollback()
             return False
