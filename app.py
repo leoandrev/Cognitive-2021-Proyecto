@@ -133,12 +133,17 @@ def clearDebt():
     if 'S_id' in session:
         if session['S_privilegio'] == 'usuario':
             # Traer libros con mora
+            print('DETALLES')
             detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
-            # print(detalles)
-            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
+            print('Ahora si')
+            print(detalles)
             Libros_mora = User_verLibros(detalles)
+            print('Libros mora:', Libros_mora)
+            Libros_mora = list(Libros_mora)
+            print('Nuevo_ibros mora:', Libros_mora)
             # Traer préstamos con mora
             for i in range(len(Libros_mora)):
+                print('Libro a ser eliminado:', Libros_mora[i])
                 Db.delete_detallePrestamo(Libros_mora[i])
             return redirect(url_for('UserBooks'))
         else:

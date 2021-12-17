@@ -25,21 +25,21 @@ def User_get_Prestamos_y_detalles(sesion, consulta):
         print(idPrestamo)
         # Se buscan prestamos pendientes pero sin mora
         for i in range(len_idPrestamo):
-            #print('idPrestamo en bucle:',idPrestamo[i])
+            print('idPrestamo en bucle:',idPrestamo[i])
             detalle = Db.idLibro_From_detallePrestamo(idPrestamo[i], consulta)
-            #print('Información recogida:',detalle)
+            print('Información recogida:', detalle)
             if len(detalle) != 0:
                 for j in range(len(detalle)):
                     detalles.append(detalle[j])
-            #print('Tupla:', detalles)
+            print('Tupla:', detalles)
         # Se buscan prestamos con mora
 
         # PRINT DETALLES -> Tupla detalles:  (((1,), (2,), (3,)), ())    
         # detalles = detalles[0]
         detalles = list(detalles)
         len_detalles = len(detalles)
-        #print('Nueva lista detalles:', detalles)
-        #print('Longitud lista Detalles:', len_detalles)
+        print('Nueva lista detalles:', detalles)
+        print('Longitud lista Detalles:', len_detalles)
         
         if len_detalles > 0:
             for i in range(len_detalles):
@@ -47,7 +47,7 @@ def User_get_Prestamos_y_detalles(sesion, consulta):
 
             # PARA RECUPERAR LOS DATOS DE LOS LIBROS, ES NECESARIO
             # CONVERTIR 'DETALLES' A UNA TUPLA
-            # print('detalles', detalles)
+            print('detalles', detalles)
             detalles = tuple(detalles)
 
             return detalles, tuple(idPrestamo)
