@@ -210,7 +210,8 @@ def books():
 def addBook():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            category = Db.findCategory(None, id)
+            category = Db.find_Category(None, id)
+            category = list(category)
             category = category[0]
             return render_template('addbook.html', categories = category)
 
