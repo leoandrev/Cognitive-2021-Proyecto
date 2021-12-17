@@ -210,9 +210,8 @@ def books():
 def addBook():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            category = Db.find_Category(None, id)
-            category = list(category)
-            category = category[0]
+            category = Db.find_Category(None, None)
+            print(category)
             return render_template('addbook.html', categories = category)
 
         else:
@@ -228,15 +227,17 @@ def addBookRequest():
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
             if request.method == 'POST':
-                nombre = request.method["nombre"]
-                autor = request.method["autor"]
-                anio = request.method["anio"]
-                edicion = request.method["edicion"]
-                ISBN = request.method["ISBN"]
-                categoria = request.method["categoria"]
-                idCategoria = Db.findCategory(categoria, None)
-                idCategoria = idCategoria[0]
+                nombre = request.form["nombre"]
+                autor = request.form["autor"]
+                anio = request.form["anio"]
+                edicion = request.form["edicion"]
+                ISBN = request.form["ISBN"]
+                idCategoria = request.form["categoria"]
+                print(idCategoria)
+                #idCategoria = Db.findCategory(categoria, None)
+                #idCategoria = idCategoria[0]
                 data = [nombre, autor, anio, edicion, ISBN, idCategoria]
+                print(data)
                 
                 if Db.insert_Book(data):
                     flash('Libro añadido :)')

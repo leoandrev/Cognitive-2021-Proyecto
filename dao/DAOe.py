@@ -86,7 +86,7 @@ class Manager:
         cursor = con.cursor()
 
         try:
-            cursor.execute("INSERT INTO libro(nombre, autor, anio, edicion, ISBN) VALUES(%s, %s, %s, %s, %s)", (data['nombre'], data["autor"], data['anio'], data['edicion'], data['ISBN'],))
+            cursor.execute("INSERT INTO libro(nombre, autor, anio, edicion, ISBN, Categoria_idCategoria) VALUES(%s, %s, %s, %s, %s, %s)", (data['nombre'], data["autor"], data['anio'], data['edicion'], data['ISBN'], data['idCategoria'], ))
             con.commit()
             return True
         except:
@@ -104,6 +104,8 @@ class Manager:
                 cursor.execute("SELECT nombre FROM Categoria where idCategoria = %s", (id, ))
             if id == None:
                 cursor.execute("SELECT idCategoria FROM Categoria where nombre = %s", (categoria, ))
+            if categoria == None and id == None:
+                cursor.execute("SELECT idCategoria, nombre FROM Categoria")
             return cursor.fetchall()
 
         except:
