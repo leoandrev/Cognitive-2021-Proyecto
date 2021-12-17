@@ -67,7 +67,7 @@ def loginRequest():
 @app.route('/register')
 def register():    
     return render_template("registrar.html")
-    
+
 @app.route('/registerRequest', methods=["POST"])
 def registerRequest():
     if request.method == 'POST':
