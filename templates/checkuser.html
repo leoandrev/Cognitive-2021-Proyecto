@@ -54,12 +54,11 @@
         </header>
         <!-- Section-->
         <div class="container">
-
-	<form class="form-horizontal" method="POST" action="/admin/deleteusuario">
-                {% for row in datausuario %}
+            {% for row in data_usuario %}
+	        <form class="form-horizontal" action="/admin/users/delete/{{row[0]}}">                
                 <div class="box-body">
                     <div class="form-group">
-                        <label class="col-sm-2 control-label">Nombre</label>
+                        <label class="col-sm-2 control-label">Correo</label>
 
                         <div class="col-sm-10">
                             <input name="nombre" value="{{ row[1] }}" type="text" class="form-control" disabled>
@@ -67,66 +66,31 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="col-sm-2 control-label">Usuario</label>
+                        <label class="col-sm-2 control-label">Nombre de usuario</label>
 
                         <div class="col-sm-10">
                             <input name="usuario" value="{{ row[2] }}" type="text" class="form-control" disabled>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Email</label>
-
-                        <div class="col-sm-10">
-                            <input name="email" value="{{ row[3] }}" type="text" class="form-control" disabled>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="box-footer">
-                    <input name="delete" type="submit" class="btn btn-info pull-right" value="Eliminar usuario">
+                    <input name="delete" type="submit" class="btn btn-info pull-right" value="Eliminar usuario" href="/admin/users/delete/{{row[0]}}">
                 </div>
                 {% endfor %}
             </form>
+        </div>
 
         <section class="py-5">
             <div class="container px-4 px-lg-5 mt-5">
-                <h2>Libros con préstamos pendientes</h2>
-                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-                    
-                    {% if Libros_pendientes|length == 0 %}
-                    No data
-                    {% else %}
-                        {% for book in Libros_pendientes %}
-                        <div class="col mb-5">
-                            <div class="card h-100">
-                                <!-- Product image-->
-                                <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                                <!-- Product details-->
-                                <div class="card-body p-4">
-                                    <div class="text-center">
-                                        <!-- Product name-->
-                                        <h5 class="fw-bolder">{{ book[1] }}</h5>
-                                        <!-- Product price-->
-                                        {% if book[2] == '' %} Desconocido {% else %} {{ book[2] }} {% endif %}- {{ book[3] }}
-                                    </div>
-                                </div>
-                                <!-- Product actions-->
-                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="/user/books/reservar/{{ book[0] }}">Devolver</a></div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
 
                 <h2>Préstamos con mora</h2>
                 
                 <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
     
                     {% if Libros_mora|length == 0 %}
-                    No data
+                    No hay moras
                     {% else %}
                         {% for book in Libros_mora %}
                         <div class="col mb-5">
@@ -153,10 +117,6 @@
                 </div>
             </div>
         </section>
-        
-
-           
-          
       
         <!-- Footer-->
         <footer class="py-5 bg-dark">

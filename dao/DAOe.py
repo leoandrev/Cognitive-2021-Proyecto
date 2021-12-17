@@ -12,7 +12,7 @@ class Manager:
             if id == None:
                 cursor.execute("SELECT * FROM usuario where privilegio = 'usuario' order by correo asc")
             else:
-                cursor.execute("SELECT * FROM usuario where id = %s && privilegio = 'usuario'", (id,))
+                cursor.execute("SELECT * FROM usuario where idUsuario = %s && privilegio = 'usuario'", (id,))
             return cursor.fetchall()
         except:
             return ()
@@ -43,8 +43,7 @@ class Manager:
         cursor = con.cursor()        
 
         try:
-            cursor.execute("DELETE FROM usuario where id = %s", (id,))
-            cursor.execute("DELETE FROM prestamo where Usuario_idUsuario = %s", (id,))
+            cursor.execute("DELETE FROM usuario where idUsuario = %s", (id,))
             con.commit()
             return True
         except:
@@ -86,7 +85,7 @@ class Manager:
         cursor = con.cursor()
 
         try:
-            cursor.execute("INSERT INTO libro(nombre, autor, anio, edicion, ISBN, Categoria_idCategoria) VALUES(%s, %s, %s, %s, %s, %s)", (data['nombre'], data["autor"], data['anio'], data['edicion'], data['ISBN'], data['idCategoria'], ))
+            cursor.execute("INSERT INTO libro(nombre, autor, anio, edicion, ISBN, Categoria_idCategoria) VALUES(%s, %s, %s, %s, %s, %s)", (data[0], data[1], data[2], data[3], data[4], data[5], ))
             con.commit()
             return True
         except:
@@ -203,7 +202,7 @@ class Manager:
         finally:
             con.close()
 
-    def iddetallePrestamo_from_detallePrestamo(self, id):
+    def iddetallePrestamo_from_detallePrestamo(self, id, ):
         con = Manager.connect(self)
         cursor = con.cursor()
 

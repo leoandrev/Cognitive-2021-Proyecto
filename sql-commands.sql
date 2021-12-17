@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS Libro (
   anio VARCHAR(4) NOT NULL,
   edicion VARCHAR(10) NOT NULL,
   ISBN VARCHAR(25) NOT NULL,
-  id_imagen VARCHAR(45) NOT NULL,
+  id_imagen VARCHAR(45),
   Categoria_idCategoria INT NOT NULL,
   PRIMARY KEY (idLibro),
   UNIQUE INDEX ISBN_UNIQUE (ISBN ASC) ,

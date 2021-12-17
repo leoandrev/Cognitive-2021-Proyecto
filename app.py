@@ -153,20 +153,23 @@ def clearDebt():
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
-@app.route('/books/giveBack/<int:id>')
+@app.route('/books/return/<int:id>')
 def giveBackBook(id):
     if 'S_id' in session:
         if session['S_privilegio'] == 'usuario':
             # Traer detallePrestamo asociado a idLibro y Usuario_idUsuario
             #idsPrestamo = Db.idPrestamo_From_Prestamo(id)
-            detalles, prestamos = User_get_Prestamos_y_detalles(id, )
-            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
+            detalles, prestamos = User_get_Prestamos_y_detalles(session["S_id"], 0)
             # print(detalles)
-            detalles, prestamos = User_get_Prestamos_y_detalles(session['S_id'], 1)
-            Libros_mora = User_verLibros(detalles)
-            # Traer préstamos con mora
-            for i in range(len(Libros_mora)):
-                Db.delete_detallePrestamo(Libros_mora[i])
+            for i in range(len(detalles)):
+                idDetalle = Db.iddetallePrestamo_from_detallePrestamo(id)
+            idDetalle = idDetalle[0]
+            today = date.today()
+            if Db.registrar_devolucion(today, idDetalle):
+                flash('Libro devuelto :)')
+            else:
+                flash('Error al devolver el libro')
+            
             return redirect(url_for('UserBooks'))
         else:
             flash('Esta ruta corresponde a usuario.')
@@ -244,7 +247,7 @@ def addBookRequest():
                     return redirect(url_for('admin'))
                 else:
                     flash('Inserción fallida. Vuelva a intentar')
-                    return redirect(url_for('addBook'))
+                    return redirect(url_for('admin'))
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
             return render_template('inicio.html')
@@ -336,15 +339,7 @@ def deleteBook(id):
             else:
                 Db.deleteBook(id)
                 flash('Operacion hecha.')
-                return redirect(url_for('books'))
-            # if len(detalles) != 0:
-            #     flash('Operación fallida. Hay préstamos pendientes.')
-            # else:
-            #     if Db.deleteBook(id):
-            #         flash('Operación exitosa')
-            #     else:
-            #         flash('Operación fallida. Vuelva a intentar.')
-            
+                return redirect(url_for('books'))            
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
@@ -379,7 +374,7 @@ def User(id):
             data = Db.get_Users(id)
             detalles, prestamos = User_get_Prestamos_y_detalles(id, 1)
             Libros_mora = User_verLibros(detalles)
-            return render_template('admin/users.html', data_usuario=data, Libros_mora=Libros_mora)
+            return render_template('checkuser.html', data_usuario=data, Libros_mora=Libros_mora)
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
@@ -393,25 +388,23 @@ def User(id):
 def deleteUserRequest(id):
     if 'S_privilegio' in session:
         if session['S_privilegio'] == 'admin':
-            detalles, prestamos = Db.User_get_Prestamos_y_detalles(id, None)
+            detalles, prestamos = User_get_Prestamos_y_detalles(id, None)
             detalles = list(detalles)
             prestamos = list(prestamos)
             print('IDs de detallePrestamos asociados al usuario:',detalles)
             print('IDs de Prestamos asociados al usuario:',prestamos)
             # Eliminacion de detallePrestamo
-            if len(detalles) > 0:
-                for i in range(len(prestamos)):
-                    Db.delete_detallePrestamo(detalles[i])
-            # Eliminacion de Prestamos
             if len(prestamos) > 0:
                 for i in range(len(prestamos)):
-                    Db.delete_Prestamo(prestamos[i])
+                    Db.delete_detallePrestamo(prestamos[i], 0)
+            # Eliminacion de Prestamos
+            Db.delete_Prestamo(id)
             
             # Eliminacion de Usuario
-            Db.deleteUser(id)
+            Db.delete_User(id)
             flash('Operación ejecutada.')
 
-            return redirect(url_for('Users'))
+            return redirect(url_for('books'))
 
         else:
             flash('No tienes autorización para ingresar a esta ruta.')
