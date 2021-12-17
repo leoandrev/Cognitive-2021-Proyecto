@@ -384,6 +384,26 @@ def User(id):
         flash('No has iniciado sesión aún.')
         return redirect(url_for('login'))
 
+@app.route('/admin/users/add')
+def User(id):
+    if 'S_privilegio' in session:
+        if session['S_privilegio'] == 'admin':
+            data = Db.get_Users(id)
+            detalles, prestamos = User_get_Prestamos_y_detalles(id, 1)
+            Libros_mora = User_verLibros(detalles)
+            return render_template('checkuser.html', data_usuario=data, Libros_mora=Libros_mora)
+
+        else:
+            flash('No tienes autorización para ingresar a esta ruta.')
+            return render_template('admin/dashboard.html')            
+
+    else:
+        flash('No has iniciado sesión aún.')
+        return redirect(url_for('login'))
+
+@app.route('/admin/users/addRequest', methods=["POST"])
+def 
+
 @app.route('/admin/users/delete/<int:id>') # LISTA PARA PROBARSE
 def deleteUserRequest(id):
     if 'S_privilegio' in session:
