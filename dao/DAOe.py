@@ -160,12 +160,15 @@ class Manager:
         finally:
             con.close()
 
-    def delete_detallePrestamo(self, id):
+    def delete_detallePrestamo(self, id, indi):
         con = Manager.connect(self)
         cursor = con.cursor()
 
         try:
-            cursor.execute("DELETE FROM detallePrestamo where Prestamo_idPrestamo = %s", (id,))
+            if indi == 0:
+                cursor.execute("DELETE FROM detallePrestamo where Prestamo_idPrestamo = %s", (id,))
+            else:
+                cursor.execute("DELETE FROM detallePrestamo where Libro_idLibro = %s", (id,))
             con.commit()
         except:
             con.rollback()

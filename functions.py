@@ -14,7 +14,7 @@ def User_get_Prestamos_y_detalles(sesion, consulta):
     #print('Longitud: ', len(idPrestamo))
 
     len_idPrestamo = len(idPrestamo)
-    print(idPrestamo)
+    #print(idPrestamo)
     if len_idPrestamo > 0:
         for i in range(len_idPrestamo):
             idPrestamo[i] = (idPrestamo[i])[0]
@@ -22,24 +22,24 @@ def User_get_Prestamos_y_detalles(sesion, consulta):
         # SEGUNDO, SE OBTIENEN LOS DETALLES DE
         # PRESTAMO RELACIONADOS A ESOS PRESTAMOS OBTENIDOS
         idPrestamo=tuple(idPrestamo)
-        print(idPrestamo)
+        #print(idPrestamo)
         # Se buscan prestamos pendientes pero sin mora
         for i in range(len_idPrestamo):
-            print('idPrestamo en bucle:',idPrestamo[i])
+            #print('idPrestamo en bucle:',idPrestamo[i])
             detalle = Db.idLibro_From_detallePrestamo(idPrestamo[i], consulta)
-            print('Información recogida:', detalle)
+            #print('Información recogida:', detalle)
             if len(detalle) != 0:
                 for j in range(len(detalle)):
                     detalles.append(detalle[j])
-            print('Tupla:', detalles)
+            #print('Tupla:', detalles)
         # Se buscan prestamos con mora
 
         # PRINT DETALLES -> Tupla detalles:  (((1,), (2,), (3,)), ())    
         # detalles = detalles[0]
         detalles = list(detalles)
         len_detalles = len(detalles)
-        print('Nueva lista detalles:', detalles)
-        print('Longitud lista Detalles:', len_detalles)
+        #print('Nueva lista detalles:', detalles)
+        #print('Longitud lista Detalles:', len_detalles)
         
         if len_detalles > 0:
             for i in range(len_detalles):
@@ -47,7 +47,7 @@ def User_get_Prestamos_y_detalles(sesion, consulta):
 
             # PARA RECUPERAR LOS DATOS DE LOS LIBROS, ES NECESARIO
             # CONVERTIR 'DETALLES' A UNA TUPLA
-            print('detalles', detalles)
+            #print('detalles', detalles)
             detalles = tuple(detalles)
 
             return detalles, tuple(idPrestamo)
@@ -123,7 +123,7 @@ def eliminar_Prestamos_y_detalles(tupla_detalles, tupla_prestamos):
     len_detalles = len(tupla_detalles)
     if len_detalles > 0:
         for i in range(len_detalles):
-            Db.delete_detallePrestamo(tupla_detalles[i])
+            Db.delete_detallePrestamo(tupla_detalles[i], 0)
     
     len_prestamos = len(tupla_prestamos)
     if len_prestamos > 0:
