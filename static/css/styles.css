@@ -69,6 +69,7 @@
 *::after {
   box-sizing: border-box;
 }
+
 .appWhatsapp{
   position: fixed;
   right: 26px;
@@ -84,6 +85,13 @@
   :root {
     scroll-behavior: smooth;
   }
+}
+
+.identacion{
+   margin-top:35px;
+}
+form{
+  margin:50px;
 }
 
 body {

@@ -2,7 +2,7 @@ import pymysql
 
 class Manager:
     def connect(self):
-        return pymysql.connect(host="localhost",user="root",password="",db="db_prueba1")
+        return pymysql.connect(host="localhost",user="root",password="pass",db="db_prueba1")
 
     def get_Users(self, id):
         con = Manager.connect(self)
