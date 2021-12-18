@@ -69,7 +69,17 @@
 *::after {
   box-sizing: border-box;
 }
-
+.appWhatsapp{
+  position: fixed;
+  right: 26px;
+  bottom: 100px;
+  width: 60px;
+  z-index: 1000;
+}
+.appWhatsapp img{
+  width: 100%;
+  height: auto;
+}
 @media (prefers-reduced-motion: no-preference) {
   :root {
     scroll-behavior: smooth;

@@ -99,7 +99,7 @@ def logout():
 def inicio():
     if 'S_id' in session:
         if session['S_privilegio'] == 'usuario':
-            return render_template('inicio.html')
+            return redirect(url_for('UserBooks'))
         
         else:
             flash('Esta ruta corresponde a usuario.')
